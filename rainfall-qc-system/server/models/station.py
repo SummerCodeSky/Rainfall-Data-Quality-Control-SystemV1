@@ -33,6 +33,10 @@ class Station(BaseModel):
 
 class RainfallExcerpt(BaseModel):
     station_id: str
+    month: int | None = None
+    day: int | None = None
+    starttime: str | None = None
+    endtime: str | None = None
     datetime: datetime
     precipitation: float
 
@@ -48,6 +52,8 @@ class PeriodMax(BaseModel):
     station_id: str
     period_type: str
     max_value: float
+    month: int | None = None
+    day: int | None = None
 
 
 class MonthlyYearly(BaseModel):

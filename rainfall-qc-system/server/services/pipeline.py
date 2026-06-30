@@ -5,7 +5,7 @@ import pandas as pd
 
 from models.station import DetectionResult, Report, FlagLevel
 from services.detection import DetectorRegistry
-from services.station_loader import RegionData, deduplicate_stations
+from services.station_loader import RegionData
 
 
 def _flag_level_order(level: FlagLevel) -> int:
@@ -43,7 +43,6 @@ def export_excel(report: Report, results: list[DetectionResult], output_path: st
     ws_summary = wb.active
     ws_summary.title = "汇总统计"
 
-    header_font = Font(bold=True)
     header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
     header_font_white = Font(bold=True, color="FFFFFF")
     severe_fill = PatternFill(start_color="FF6B6B", end_color="FF6B6B", fill_type="solid")

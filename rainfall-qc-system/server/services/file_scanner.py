@@ -1,6 +1,6 @@
 import re
 from enum import Enum
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -23,7 +23,7 @@ class RegionFile:
 
 FILE_KEYWORDS: dict[FileCategory, list[str]] = {
     FileCategory.PERIOD_MAX: ["各时段最大降水量", "各时段最大", "时段最大", "period_max"],
-    FileCategory.MONTHLY_YEARLY: ["各站月年降水量", "月年降水对照", "月年降水", "月年对照", "月年降水量"],
+    FileCategory.MONTHLY_YEARLY: ["各站月年降水量", "月年降水对照", "月年降水", "月年对照", "月年降水量", "降水日数对照", "降水量、降水日数"],
     FileCategory.DAILY: ["逐日降水量对照", "逐日降水", "逐日"],
     FileCategory.EXCERPT: ["降水量摘录表", "降雨摘录", "摘录"],
 }
