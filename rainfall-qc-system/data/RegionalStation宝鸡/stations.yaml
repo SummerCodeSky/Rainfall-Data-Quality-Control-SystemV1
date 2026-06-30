@@ -1,0 +1,15 @@
+- name: 西安
+  longitude: 108.94
+  latitude: 34.26
+  elevation: 397.5
+  obs_type: auto
+- name: 咸阳
+  longitude: 108.71
+  latitude: 34.33
+  elevation: 380.0
+  obs_type: auto
+- name: 宝鸡
+  longitude: 107.15
+  latitude: 34.38
+  elevation: 590.0
+  obs_type: manual
