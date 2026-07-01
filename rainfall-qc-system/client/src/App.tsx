@@ -1,15 +1,16 @@
-import { useState } from "react";
-import { Layout, Menu, Typography } from "antd";
+import { useState, Suspense, lazy } from "react";
+import { Layout, Menu, Typography, Spin } from "antd";
 import {
   EnvironmentOutlined,
   SettingOutlined,
   BugOutlined,
   BarChartOutlined,
 } from "@ant-design/icons";
-import RegionPage from "./pages/RegionPage";
-import ConfigPage from "./pages/ConfigPage";
-import DetectionPage from "./pages/DetectionPage";
-import ReportPage from "./pages/ReportPage";
+
+const RegionPage = lazy(() => import("./pages/RegionPage"));
+const ConfigPage = lazy(() => import("./pages/ConfigPage"));
+const DetectionPage = lazy(() => import("./pages/DetectionPage"));
+const ReportPage = lazy(() => import("./pages/ReportPage"));
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
@@ -47,10 +48,12 @@ export default function App() {
           </Title>
         </Header>
         <Content style={{ margin: 24, background: "#fff", padding: 24, borderRadius: 8 }}>
-          {tab === "regions" && <RegionPage />}
-          {tab === "config" && <ConfigPage />}
-          {tab === "detection" && <DetectionPage />}
-          {tab === "reports" && <ReportPage />}
+          <Suspense fallback={<div style={{ textAlign: "center", padding: 40 }}><Spin size="large" /></div>}>
+            {tab === "regions" && <RegionPage />}
+            {tab === "config" && <ConfigPage />}
+            {tab === "detection" && <DetectionPage />}
+            {tab === "reports" && <ReportPage />}
+          </Suspense>
         </Content>
       </Layout>
     </Layout>

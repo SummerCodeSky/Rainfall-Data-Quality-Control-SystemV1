@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, Switch, InputNumber, Button, message, Space, Collapse, Typography } from "antd";
+import { Switch, InputNumber, Button, message, Space, Flex, Collapse, Typography } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import { fetchConfig, updateConfig } from "../api/client";
 import type { DetectionConfig } from "../types";
@@ -78,59 +78,62 @@ export default function ConfigPage() {
     children: (
       <div>
         {key === "persistent_trace" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>滑动窗口(h):</Text><InputNumber value={cfg.window_hours as number} onChange={(v) => setDetectorValue(key, "window_hours", v)} /></Space>
-            <Space><Text>微量下限(mm):</Text><InputNumber value={cfg.low_min as number} onChange={(v) => setDetectorValue(key, "low_min", v)} step={0.1} /></Space>
-            <Space><Text>微量上限(mm):</Text><InputNumber value={cfg.low_max as number} onChange={(v) => setDetectorValue(key, "low_max", v)} step={0.1} /></Space>
-          </Space>
+            <Space><Text>目标微量值(mm):</Text><InputNumber value={(cfg.target_values as number[])[0]} onChange={(v) => setDetectorValue(key, "target_values", [v, (cfg.target_values as number[])[1] ?? 0.2])} step={0.1} /></Space>
+            <Space><Text>打断阈值(mm):</Text><InputNumber value={cfg.max_break as number} onChange={(v) => setDetectorValue(key, "max_break", v)} step={0.1} /></Space>
+          </Flex>
         )}
         {key === "stagnation" && (
           <Text>僵直值列表和分档阈值: 见完整配置</Text>
         )}
         {key === "climate_extreme" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>时雨量上限(mm):</Text><InputNumber value={cfg.hourly_max as number} onChange={(v) => setDetectorValue(key, "hourly_max", v)} /></Space>
             <Space><Text>百分位数:</Text><InputNumber value={cfg.percentile as number} onChange={(v) => setDetectorValue(key, "percentile", v)} step={0.1} /></Space>
-          </Space>
+          </Flex>
         )}
         {key === "jump_step" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>最小倍率:</Text><InputNumber value={cfg.min_ratio as number} onChange={(v) => setDetectorValue(key, "min_ratio", v)} step={0.5} /></Space>
             <Space><Text>最小差值(mm):</Text><InputNumber value={cfg.min_abs_diff as number} onChange={(v) => setDetectorValue(key, "min_abs_diff", v)} step={1} /></Space>
-          </Space>
+          </Flex>
         )}
         {key === "cross_station" && (
           <Text>Z-Score和差距分档阈值: 见完整配置</Text>
         )}
         {key === "daily_cross_station" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>异常偏小因子:</Text><InputNumber value={cfg.outlier_small_factor as number} onChange={(v) => setDetectorValue(key, "outlier_small_factor", v)} step={0.01} /></Space>
             <Space><Text>异常偏大因子:</Text><InputNumber value={cfg.outlier_large_factor as number} onChange={(v) => setDetectorValue(key, "outlier_large_factor", v)} step={0.5} /></Space>
-          </Space>
+            <Space><Text>绝对微雨阈值(mm):</Text><InputNumber value={cfg.absolute_micro_threshold as number} onChange={(v) => setDetectorValue(key, "absolute_micro_threshold", v)} step={0.1} /></Space>
+          </Flex>
         )}
         {key === "human_error" && (
           <Text>汛期/非汛期月份配置: 见完整配置</Text>
         )}
         {key === "monthly_comparison" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>非汛期最大差值(mm):</Text><InputNumber value={cfg.non_flood_diff_max as number} onChange={(v) => setDetectorValue(key, "non_flood_diff_max", v)} step={1} /></Space>
             <Space><Text>非汛期最大倍数:</Text><InputNumber value={cfg.non_flood_ratio_max as number} onChange={(v) => setDetectorValue(key, "non_flood_ratio_max", v)} step={0.5} /></Space>
             <Space><Text>汛期最大差值(mm):</Text><InputNumber value={cfg.flood_diff_max as number} onChange={(v) => setDetectorValue(key, "flood_diff_max", v)} step={1} /></Space>
             <Space><Text>汛期最大倍数:</Text><InputNumber value={cfg.flood_ratio_max as number} onChange={(v) => setDetectorValue(key, "flood_ratio_max", v)} step={0.5} /></Space>
-          </Space>
+          </Flex>
         )}
         {key === "yearly_comparison" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>年降水最小差值(mm):</Text><InputNumber value={cfg.precip_diff_min as number} onChange={(v) => setDetectorValue(key, "precip_diff_min", v)} step={10} /></Space>
             <Space><Text>年降水最大倍数:</Text><InputNumber value={cfg.precip_ratio_max as number} onChange={(v) => setDetectorValue(key, "precip_ratio_max", v)} step={0.5} /></Space>
             <Space><Text>年降水日数最小差值:</Text><InputNumber value={cfg.days_diff_min as number} onChange={(v) => setDetectorValue(key, "days_diff_min", v)} step={1} /></Space>
             <Space><Text>年降水日数最大倍数:</Text><InputNumber value={cfg.days_ratio_max as number} onChange={(v) => setDetectorValue(key, "days_ratio_max", v)} step={0.5} /></Space>
-          </Space>
+          </Flex>
         )}
         {key === "period_max" && (
-          <Space direction="vertical">
+          <Flex vertical gap="small">
             <Space><Text>僵直连续次数阈值:</Text><InputNumber value={cfg.stagnation_count as number} onChange={(v) => setDetectorValue(key, "stagnation_count", v)} /></Space>
-          </Space>
+            <Space><Text>低值阈值(mm):</Text><InputNumber value={cfg.low_value_threshold as number} onChange={(v) => setDetectorValue(key, "low_value_threshold", v)} step={0.1} /></Space>
+            <Space><Text>低值连续次数:</Text><InputNumber value={cfg.low_value_count as number} onChange={(v) => setDetectorValue(key, "low_value_count", v)} /></Space>
+          </Flex>
         )}
       </div>
     ),

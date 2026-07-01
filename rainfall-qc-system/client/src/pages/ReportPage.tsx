@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Table,
   Button,
   message,
   Tag,
   Space,
+  Flex,
   Typography,
   Select,
   DatePicker,
@@ -470,31 +471,64 @@ export default function ReportPage() {
     },
   ];
 
-  const resultColumns: ColumnsType<DetectionResult> = [
-    { title: "时间", dataIndex: "datetime", key: "datetime", width: 180 },
-    {
-      title: "数据表",
-      dataIndex: "data_type",
-      key: "data_type",
-      render: (v: string) => {
-        const map: Record<string, string> = {
-          excerpt: "降雨摘录表",
-          daily: "逐日降水表",
-          monthly: "月年对照表",
-        };
-        return map[v] || v;
+  const batchResultsRowKey = (r: DetectionResult) => `${r.station_id}-${r.datetime}-${r.detector}-${r.trigger_rule}`;
+  const singleReportRowKey = (r: DetectionResult) => `${r.datetime}-${r.detector}-${r.trigger_rule}`;
+
+  const resultColumns = useMemo<ColumnsType<DetectionResult>>(
+    () => [
+      { title: "站点", dataIndex: "station_id", key: "station_id", width: 90 },
+      { title: "时间", dataIndex: "datetime", key: "datetime", width: 160 },
+      {
+        title: "数据表",
+        dataIndex: "data_type",
+        key: "data_type",
+        width: 130,
+        filters: [
+          { text: "降雨摘录表", value: "excerpt" },
+          { text: "逐日降水表", value: "daily" },
+          { text: "月年对照表", value: "monthly" },
+          { text: "时段最大表", value: "period_max" },
+        ],
+        onFilter: (value, record) => record.data_type === value,
+        render: (v: string) => {
+          const map: Record<string, string> = {
+            excerpt: "降雨摘录表",
+            daily: "逐日降水表",
+            monthly: "月年对照表",
+            period_max: "时段最大表",
+          };
+          return map[v] || v;
+        },
       },
-    },
-    { title: "实测值", dataIndex: "value", key: "value" },
-    {
-      title: "标记级别",
-      dataIndex: "flag_level",
-      key: "flag_level",
-      render: (v: string) => <Tag color={FLAG_COLORS[v]}>{v}</Tag>,
-    },
-    { title: "触发规则", dataIndex: "trigger_rule", key: "trigger_rule" },
-    { title: "检测器", dataIndex: "detector", key: "detector" },
-  ];
+      { title: "实测值", dataIndex: "value", key: "value", width: 80 },
+      {
+        title: "标记级别",
+        dataIndex: "flag_level",
+        key: "flag_level",
+        width: 90,
+        filters: [
+          { text: <Tag color="red">严重</Tag>, value: "Severe" },
+          { text: <Tag color="orange">警告</Tag>, value: "Warning" },
+          { text: <Tag color="green">一般</Tag>, value: "General" },
+          { text: <Tag color="blue">提示</Tag>, value: "Info" },
+        ],
+        onFilter: (value, record) => record.flag_level === value,
+        render: (v: string) => <Tag color={FLAG_COLORS[v]}>{v}</Tag>,
+      },
+      { title: "触发规则", dataIndex: "trigger_rule", key: "trigger_rule", ellipsis: true },
+      { title: "检测器", dataIndex: "detector", key: "detector", width: 160 },
+      {
+        title: "说明",
+        dataIndex: "detail",
+        key: "detail",
+        ellipsis: true,
+        render: (v: string) => (
+          <span style={{ fontSize: 12, color: "#666" }}>{v}</span>
+        ),
+      },
+    ],
+    []
+  );
 
   const isBatchDeleteEnabled = selectedRowKeys.length > 0;
 
@@ -666,14 +700,14 @@ export default function ReportPage() {
           }}
           locale={{
             emptyText: regions.length > 0 || stations.length > 0 || timeRange || riskFilter ? (
-              <Space direction="vertical">
+              <Flex vertical gap="small">
                 <span>暂无匹配筛选条件的检测报告</span>
                 <Button onClick={handleReset}>重置筛选</Button>
-              </Space>
+              </Flex>
             ) : (
-              <Space direction="vertical">
+              <Flex vertical gap="small">
                 <span>暂无检测报告数据</span>
-              </Space>
+              </Flex>
             ),
           }}
         />
@@ -691,14 +725,14 @@ export default function ReportPage() {
           }}
           locale={{
             emptyText: regions.length > 0 || stations.length > 0 || timeRange || riskFilter ? (
-              <Space direction="vertical">
+              <Flex vertical gap="small">
                 <span>暂无匹配筛选条件的检测报告</span>
                 <Button onClick={handleReset}>重置筛选</Button>
-              </Space>
+              </Flex>
             ) : (
-              <Space direction="vertical">
+              <Flex vertical gap="small">
                 <span>暂无检测报告数据</span>
-              </Space>
+              </Flex>
             ),
           }}
         />
@@ -720,9 +754,9 @@ export default function ReportPage() {
           <Table
             dataSource={reportResults}
             columns={resultColumns}
-            rowKey={(r) => `${r.datetime}-${r.detector}-${r.trigger_rule}`}
+            rowKey={singleReportRowKey}
             size="small"
-            scroll={{ x: 1000 }}
+            scroll={{ x: 1200 }}
           />
         </>
       )}
@@ -733,9 +767,9 @@ export default function ReportPage() {
           <Table
             dataSource={reportResults}
             columns={resultColumns}
-            rowKey={(r) => `${r.station_id}-${r.datetime}-${r.detector}-${r.trigger_rule}`}
+            rowKey={batchResultsRowKey}
             size="small"
-            scroll={{ x: 1000 }}
+            scroll={{ x: 1200 }}
           />
         </>
       )}

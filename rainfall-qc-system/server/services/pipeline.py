@@ -74,7 +74,8 @@ def export_excel(report: Report, results: list[DetectionResult], output_path: st
         total = sum(counts.values())
         ws_summary.append([detector, counts["Severe"], counts["Warning"], counts["General"], counts["Info"], total])
 
-    columns = ["时间", "实测值", "期望值", "偏差", "检测器", "触发规则", "标记级别", "补充说明"]
+    columns_excerpt = ["时间", "实测值", "期望值", "偏差", "检测器", "触发规则", "标记级别", "补充说明"]
+    columns_region = ["站点", "时间", "实测值", "期望值", "偏差", "检测器", "触发规则", "标记级别", "补充说明"]
     by_data_type = {}
     for r in results:
         by_data_type.setdefault(r.data_type, []).append(r)
@@ -87,7 +88,9 @@ def export_excel(report: Report, results: list[DetectionResult], output_path: st
             continue
 
         ws = wb.create_sheet(title=sheet_name)
-        ws.append(columns)
+        is_excerpt = data_type == "excerpt"
+        cols = columns_excerpt if is_excerpt else columns_region
+        ws.append(cols)
         for cell in ws[1]:
             cell.font = header_font_white
             cell.fill = header_fill
@@ -95,7 +98,10 @@ def export_excel(report: Report, results: list[DetectionResult], output_path: st
 
         for r in items:
             row_idx = ws.max_row + 1
-            ws.append([
+            row_data = []
+            if not is_excerpt:
+                row_data.append(r.station_id)
+            row_data.extend([
                 r.datetime,
                 r.value,
                 r.expected_value if r.expected_value is not None else "",
@@ -105,7 +111,9 @@ def export_excel(report: Report, results: list[DetectionResult], output_path: st
                 r.flag_level.value,
                 r.detail,
             ])
-            flag_cell = ws.cell(row=row_idx, column=7)
+            ws.append(row_data)
+            flag_col = 7 if is_excerpt else 8
+            flag_cell = ws.cell(row=row_idx, column=flag_col)
             if r.flag_level == FlagLevel.SEVERE:
                 flag_cell.fill = severe_fill
             elif r.flag_level == FlagLevel.WARNING:
@@ -160,7 +168,10 @@ def run_pipeline(
             continue
 
         for r in det_results:
-            if r.station_id == target_station_id:
+            if data_type == "excerpt":
+                if r.station_id == target_station_id:
+                    all_results.append(r)
+            else:
                 all_results.append(r)
 
     report = generate_report(target_station_id, all_results)

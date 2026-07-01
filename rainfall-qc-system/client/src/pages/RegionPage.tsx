@@ -21,8 +21,6 @@ import {
   Popconfirm,
   Typography,
   Divider,
-  Tooltip,
-  Empty,
 } from "antd";
 import {
   PlusOutlined,
@@ -30,7 +28,6 @@ import {
   DeleteOutlined,
   PlayCircleOutlined,
   ReloadOutlined,
-  FileExcelOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
 import {
@@ -48,7 +45,7 @@ import {
 } from "../api/client";
 import type { RegionInfo, RegionDetail, RegionDetectResult, AllDetectResult, Station, DetectionResult } from "../types";
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const FLAG_COLORS: Record<string, string> = {
   Severe: "red",
@@ -606,28 +603,37 @@ export default function RegionPage() {
 
         <Table
           dataSource={result.results.slice(0, 50)}
-          rowKey={(r: DetectionResult, idx: number) => `${r.station_id}-${r.datetime}-${r.detector}-${idx}`}
+          rowKey={(r: DetectionResult, idx?: number) => `${r.station_id}-${r.datetime}-${r.detector}-${idx ?? 0}`}
           size="small"
           scroll={{ x: 1200 }}
           columns={[
             { title: "站点", dataIndex: "station_id", key: "station_id", width: 80 },
-            { title: "时间", dataIndex: "datetime", key: "datetime", width: 160 },
+            { title: "时间", dataIndex: "datetime", key: "datetime", width: 150 },
             {
               title: "数据表",
               dataIndex: "data_type",
               key: "data_type",
-              width: 100,
+              width: 110,
               render: (v: string) => CATEGORY_LABELS[v] || v,
             },
-            { title: "实测值", dataIndex: "value", key: "value", width: 80 },
-            { title: "检测器", dataIndex: "detector", key: "detector", width: 160 },
+            { title: "实测值", dataIndex: "value", key: "value", width: 70 },
+            { title: "检测器", dataIndex: "detector", key: "detector", width: 140 },
             { title: "触发规则", dataIndex: "trigger_rule", key: "trigger_rule", ellipsis: true },
             {
               title: "级别",
               dataIndex: "flag_level",
               key: "flag_level",
-              width: 80,
+              width: 70,
               render: (v: string) => <Tag color={FLAG_COLORS[v]}>{v}</Tag>,
+            },
+            {
+              title: "说明",
+              dataIndex: "detail",
+              key: "detail",
+              ellipsis: true,
+              render: (v: string) => (
+                <span style={{ fontSize: 12, color: "#666" }}>{v}</span>
+              ),
             },
           ]}
           pagination={result.results.length > 50 ? { pageSize: 50 } : false}

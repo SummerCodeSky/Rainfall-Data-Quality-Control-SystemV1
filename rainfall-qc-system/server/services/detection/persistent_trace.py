@@ -19,8 +19,8 @@ class PersistentTraceDetector(BaseDetector):
             return []
 
         window_hours = cfg.get("window_hours", 6)
-        low_min = cfg.get("low_min", 0.1)
-        low_max = cfg.get("low_max", 0.5)
+        target_values = cfg.get("target_values", [0.1, 0.2])
+        max_break = cfg.get("max_break", 0.5)
         duration_tiers = cfg.get("duration_tiers", {
             "info": [3, 6],
             "general": [6, 12],
@@ -28,6 +28,7 @@ class PersistentTraceDetector(BaseDetector):
             "severe": 24,
         })
 
+        target_set = set(target_values)
         results = []
         for station_id, grp in data.groupby("station_id"):
             grp = grp.sort_values("datetime").reset_index(drop=True)
@@ -41,13 +42,13 @@ class PersistentTraceDetector(BaseDetector):
             i = 0
             while i <= n - window_hours:
                 window = values[i:i + window_hours]
-                in_low_range = all(low_min <= v <= low_max and v > 0 for v in window)
-                if not in_low_range:
+                in_target = all(v in target_set for v in window)
+                if not in_target:
                     i += 1
                     continue
 
                 seg_end = i + window_hours
-                while seg_end < n and low_min <= values[seg_end] <= low_max and values[seg_end] > 0:
+                while seg_end < n and values[seg_end] in target_set:
                     seg_end += 1
 
                 duration = seg_end - i
@@ -59,7 +60,7 @@ class PersistentTraceDetector(BaseDetector):
                         station_id=str(station_id),
                         datetime_val=str(datetimes[i]),
                         value=max_val,
-                        trigger_rule=f"持续{low_min}~{low_max}mm微量降雨，持续{duration}小时",
+                        trigger_rule=f"持续微量降雨(值均为{'/'.join(str(v) for v in target_values)}mm)，持续{duration}小时",
                         flag_level=level,
                         expected_value=0.0,
                         detail=f"异常窗口={datetimes[i]} ~ {datetimes[seg_end-1]}，持续{duration}h，最大值={max_val:.1f}mm",

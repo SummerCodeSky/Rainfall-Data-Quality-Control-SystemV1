@@ -10,8 +10,8 @@ DEFAULT_CONFIG = {
         "persistent_trace": {
             "enabled": True,
             "window_hours": 6,
-            "low_min": 0.1,
-            "low_max": 0.5,
+            "target_values": [0.1, 0.2],
+            "max_break": 0.5,
             "duration_tiers": {
                 "info": [3, 6],
                 "general": [6, 12],
@@ -79,6 +79,7 @@ DEFAULT_CONFIG = {
             "outlier_large_factor": 3.0,
             "micro_threshold": 0.2,
             "neighbor_dry_threshold": 0.2,
+            "absolute_micro_threshold": 0.1,
         },
         "human_error": {
             "enabled": True,
@@ -111,6 +112,8 @@ DEFAULT_CONFIG = {
         "period_max": {
             "enabled": True,
             "stagnation_count": 3,
+            "low_value_threshold": 0.5,
+            "low_value_count": 3,
             "gap_tiers": {
                 "info": [2.0, 5.0],
                 "general": [5.0, 10.0],

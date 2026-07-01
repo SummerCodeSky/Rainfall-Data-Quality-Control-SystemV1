@@ -40,6 +40,7 @@ class DailyCrossStationDetector(BaseDetector):
         outlier_large_factor = cfg.get("outlier_large_factor", 3.0)
         micro_threshold = cfg.get("micro_threshold", 0.2)
         neighbor_dry_threshold = cfg.get("neighbor_dry_threshold", 0.2)
+        absolute_micro_threshold = cfg.get("absolute_micro_threshold", 0.1)
 
         if "date" not in data.columns:
             return []
@@ -109,6 +110,23 @@ class DailyCrossStationDetector(BaseDetector):
 
                 # Scenario (3): uniform distribution but one outlier
                 if not has_rain or station_mean <= micro_threshold:
+                    continue
+
+                # 兜底：绝对微雨阈值（当区域均值很低时，比例因子可能漏检 0.1 这类极小值）
+                if precip <= absolute_micro_threshold and other_min > precip:
+                    gap = other_min - precip
+                    level = _gap_level(gap, gap_tiers)
+                    if level:
+                        results.append(self._result(
+                            station_id=str(sid),
+                            datetime_val=str(date_val),
+                            value=float(precip),
+                            trigger_rule=f"区域均匀分布{snow_flag}，本站异常微雨={precip:.1f}mm，差距={gap:.1f}mm",
+                            flag_level=level,
+                            expected_value=float(other_min),
+                            deviation=float(gap),
+                            detail=f"邻站最小={other_min:.1f}mm，区域均值={station_mean:.1f}mm，邻站范围={other_min:.1f}~{other_max:.1f}mm",
+                        ))
                     continue
 
                 if precip < station_mean * outlier_small_factor:

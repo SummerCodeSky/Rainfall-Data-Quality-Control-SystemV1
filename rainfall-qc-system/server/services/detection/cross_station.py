@@ -114,6 +114,8 @@ class PeriodMaxDetector(BaseDetector):
             return []
 
         stagnation_count = cfg.get("stagnation_count", 3)
+        low_value_threshold = cfg.get("low_value_threshold", 0.5)
+        low_value_count = cfg.get("low_value_count", 3)
         gap_tiers = cfg.get("gap_tiers", {
             "info": [2.0, 5.0],
             "general": [5.0, 10.0],
@@ -128,6 +130,7 @@ class PeriodMaxDetector(BaseDetector):
             values = grp["max_value"].values
             periods = grp["period_type"].values
 
+            # 僵直值检测：连续相同值
             for i in range(len(values) - stagnation_count + 1):
                 window = values[i:i + stagnation_count]
                 if all(v == window[0] and v > 0 for v in window):
@@ -140,6 +143,30 @@ class PeriodMaxDetector(BaseDetector):
                         expected_value=None,
                         detail=f"时段{periods[i]}~{periods[i+stagnation_count-1]}，值均为{window[0]}mm",
                     ))
+
+            # 持续性低值检测：连续多个时段最大值持续偏低（<= low_value_threshold）
+            i = 0
+            while i <= len(values) - low_value_count:
+                window = values[i:i + low_value_count]
+                if all(0 < v <= low_value_threshold for v in window):
+                    seg_end = i + low_value_count
+                    while seg_end < len(values) and 0 < values[seg_end] <= low_value_threshold:
+                        seg_end += 1
+                    duration = seg_end - i
+                    min_val = float(min(values[i:seg_end]))
+                    max_val = float(max(values[i:seg_end]))
+                    results.append(self._result(
+                        station_id=str(station_id),
+                        datetime_val=str(periods[i]),
+                        value=max_val,
+                        trigger_rule=f"各时段最大降水量连续{duration}个时段持续低值(≤{low_value_threshold}mm)",
+                        flag_level="General",
+                        expected_value=None,
+                        detail=f"时段{periods[i]}~{periods[seg_end-1]}，最小={min_val:.1f}mm，最大={max_val:.1f}mm",
+                    ))
+                    i = seg_end
+                else:
+                    i += 1
 
         if "period_type" in data.columns:
             for pt, grp in data.groupby("period_type"):
