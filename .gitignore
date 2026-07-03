@@ -3,6 +3,10 @@
 .gemini
 .opencode
 
+# Runtime data
+rainfall-qc-system/data/*.db
+rainfall-qc-system/config.yaml
+
 # IDE and Editors
 **/.idea/
 **/.vscode/
